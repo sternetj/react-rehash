@@ -1,11 +1,11 @@
-import React from "react";
-import ReactDOM from "react-dom";
+import Rehash from "./rehash";
 
-const element = (
-  <div id="foo">
-    <a>bar</a>
-    <b />
-  </div>
+/** @jsx Rehash.createElement */
+const element = Rehash.createElement(
+  "div",
+  { id: "foo" },
+  Rehash.createElement("a", null, "bar"),
+  Rehash.createElement("b")
 );
 const container = document.getElementById("root");
-ReactDOM.render(element, container);
+Rehash.render(element, container);
