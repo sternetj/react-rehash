@@ -52,5 +52,16 @@
       "}"
     ],
     "description": "Empty Work Loop"
+  },
+  "commit-work": {
+    "scope": "javascript",
+    "prefix": ["cw", "commit-work"],
+    "body": [
+      "/** @param {Fiber} fiber */",
+      "function commitWork(fiber) {",
+      "\t$1",
+      "}"
+    ],
+    "description": "Empty Work Loop"
   }
 }
