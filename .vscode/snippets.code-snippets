@@ -66,6 +66,22 @@
     ],
     "description": "Reconcile Children Func"
   },
+  "counter-example": {
+    "scope": "javascript",
+    "prefix": ["ce", "counter"],
+    "body": [
+      "function Counter() {",
+      "  const [currentCount, setCount] = Rehash.useState(1)",
+      "  return (",
+      "    <h1 onClick={() => setCount(current => current + 1)}>",
+      "      Count: {currentCount}",
+      "    </h1>",
+      "  )",
+      "}",
+      "const element = <Counter />"
+    ],
+    "description": "Counter Example"
+  },
   "update-dom": {
     "scope": "javascript",
     "prefix": ["updateDom"],
