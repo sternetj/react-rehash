@@ -1,6 +1,14 @@
-import React from "react";
-import ReactDOM from "react-dom";
+import Rehash from "./rehash";
 
-const element = <h1 title="foo">Hello World</h1>;
+/** @jsx Rehash.createElement */
+function Counter() {
+  const [currentCount, setCount] = Rehash.useState(1);
+  return (
+    <h1 onClick={() => setCount(current => current + 1)}>
+      Count: {currentCount}
+    </h1>
+  );
+}
+const element = <Counter />;
 const container = document.getElementById("root");
-ReactDOM.render(element, container);
+Rehash.render(element, container);
