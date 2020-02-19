@@ -11,25 +11,26 @@ function createElement(type, props, ...children) {
 }
 
 function createTextElement(text) {
-  return createElement("TEXT_ELEMENT", { nodeValue: text });
+  return {
+    type: "TEXT_ELEMENT",
+    props: {
+      nodeValue: text,
+      children: []
+    }
+  };
 }
 
 function render(element, container) {
-  const { type, props } = element;
-  const { children, ...props } = props;
-
+  let { children, ...props } = element.props;
   const dom =
-    type === "TEXT_ELEMENT"
+    element.type === "TEXT_ELEMENT"
       ? document.createTextNode("")
-      : document.createElement(type);
+      : document.createElement(element.type);
 
-  Object.entries(props).forEach(([attr, value]) => (dom[attr] = value));
+  Object.entries(props).forEach(([key, value]) => (dom[key] = value));
   children.forEach(child => render(child, dom));
 
   container.appendChild(dom);
 }
 
-module.exports = {
-  createElement,
-  render
-};
+module.exports = { createElement, render };
