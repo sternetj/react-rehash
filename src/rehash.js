@@ -11,16 +11,21 @@ function createElement(type, props, ...children) {
 }
 
 function createTextElement(text) {
-  return createElement("TEXT_ELEMENT", { nodeValue: text });
+  return {
+    type: "TEXT_ELEMENT",
+    props: {
+      nodeValue: text,
+      children: []
+    }
+  };
 }
 
 function createDom(fiber) {
-  const { type, props } = fiber;
-
+  let { children, ...props } = fiber.props;
   const dom =
-    type === "TEXT_ELEMENT"
+    fiber.type === "TEXT_ELEMENT"
       ? document.createTextNode("")
-      : document.createElement(type);
+      : document.createElement(fiber.type);
 
   updateDom(dom, {}, props);
 
@@ -79,12 +84,12 @@ function commitWork(fiber) {
   if (!fiber) return;
 
   const domParent = fiber.parent.dom;
-
   if (fiber.effectTag === "PLACEMENT" && fiber.dom) {
     domParent.appendChild(fiber.dom);
+    fiber.alternate = fiber.dom;
   } else if (fiber.effectTag === "DELETION") {
     domParent.removeChild(fiber.dom);
-  } else if (fiber.effectTag === "UPDATE") {
+  } else if (fiber.effectTag === "UPDATE" && fiber.dom) {
     updateDom(fiber.dom, fiber.alternate.props, fiber.props);
   }
 
@@ -144,8 +149,7 @@ function performUnitOfWork(fiber) {
     fiber.dom = createDom(fiber);
   }
 
-  const elements = fiber.props.children;
-  reconcileChildren(fiber, elements);
+  reconcileChildren(fiber, fiber.props.children);
 
   if (fiber.child) return fiber.child;
 
@@ -160,12 +164,14 @@ function performUnitOfWork(fiber) {
  * @param {Pick<Fiber, "type" | "props">[]} elements
  * */
 function reconcileChildren(wipFiber, elements) {
-  let prevSibling = null;
+  let index = 0;
   let oldFiber = wipFiber.alternate && wipFiber.alternate.child;
-  elements.forEach((element, index) => {
-    let newFiber = null;
+  let prevSibling = null;
 
-    const sameType = oldFiber && element.type === oldFiber.type;
+  while (index < elements.length || oldFiber) {
+    const element = elements[index];
+    const sameType = oldFiber && element && oldFiber.type === element.type;
+    let newFiber = null;
 
     if (sameType) {
       newFiber = {
@@ -176,7 +182,8 @@ function reconcileChildren(wipFiber, elements) {
         alternate: oldFiber,
         effectTag: "UPDATE"
       };
-    } else {
+    }
+    if (element && !sameType) {
       newFiber = {
         type: element.type,
         props: element.props,
@@ -186,6 +193,10 @@ function reconcileChildren(wipFiber, elements) {
         effectTag: "PLACEMENT"
       };
     }
+    if (oldFiber && !sameType) {
+      oldFiber.effectTag = "DELETION";
+      deletions.push(oldFiber);
+    }
 
     if (oldFiber) {
       oldFiber = oldFiber.sibling;
@@ -193,21 +204,13 @@ function reconcileChildren(wipFiber, elements) {
 
     if (index === 0) {
       wipFiber.child = newFiber;
-    } else {
+    } else if (prevSibling) {
       prevSibling.sibling = newFiber;
     }
 
     prevSibling = newFiber;
-  });
-
-  while (oldFiber) {
-    oldFiber.effectTag = "DELETION";
-    deletions.push(oldFiber);
-    oldFiber = oldFiber.sibling;
+    index++;
   }
 }
 
-module.exports = {
-  createElement,
-  render
-};
+module.exports = { createElement, render };
